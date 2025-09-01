@@ -35,7 +35,7 @@ describe('localStorage utilities', () => {
 
     it('returns empty array on server-side (no window)', () => {
       const originalWindow = window;
-      // @ts-expect-error
+      // @ts-expect-error --forzar error
       delete global.window;
       expect(getReviews('book1')).toEqual([]);
       global.window = originalWindow;
