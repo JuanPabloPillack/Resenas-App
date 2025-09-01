@@ -1,44 +1,55 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import BookDetails from '../components/BookDetails';
+import { Book } from '../types';
+
+const book: Book = {
+  id: 'test-id',
+  volumeInfo: {
+    title: 'Test Book',
+    authors: ['Author Name'],
+    publishedDate: '2023',
+    pageCount: 300,
+    description: 'Great book!',
+    imageLinks: {
+      thumbnail: 'http://example.com/image.jpg',
+    },
+  },
+};
 
 describe('BookDetails', () => {
-  const book = {
-    volumeInfo: {
-      title: 'Harry Potter',
-      authors: ['J.K. Rowling'],
-      publishedDate: '1997',
-      pageCount: 300,
-      description: '<p>Great book!</p>',
-      imageLinks: { thumbnail: 'http://example.com/image.jpg' },
-    },
-  };
-
   it('renders book details', () => {
     render(<BookDetails book={book} />);
-    expect(screen.getByText('Harry Potter')).toBeInTheDocument();
-    expect(screen.getByText('Autor: J.K. Rowling')).toBeInTheDocument();
-    expect(screen.getByText('Publicado: 1997')).toBeInTheDocument();
+    expect(screen.getByText('Test Book')).toBeInTheDocument();
+    expect(screen.getByText('Autor: Author Name')).toBeInTheDocument();
+    expect(screen.getByText('Publicado: 2023')).toBeInTheDocument();
     expect(screen.getByText('Páginas: 300')).toBeInTheDocument();
     expect(screen.getByText('Great book!')).toBeInTheDocument();
-    expect(screen.getByRole('img')).toHaveAttribute('src', 'http://example.com/image.jpg');
+    // Verificar que la URL optimizada contiene la URL original codificada
+    const img = screen.getByRole('img');
+    const src = img.getAttribute('src');
+    expect(src).toContain(encodeURIComponent('https://example.com/image.jpg'));
   });
 
   it('handles missing description', () => {
-    const bookNoDesc = { volumeInfo: { ...book.volumeInfo, description: undefined } };
+    const bookNoDesc = { ...book, volumeInfo: { ...book.volumeInfo, description: undefined } };
     render(<BookDetails book={bookNoDesc} />);
-    expect(screen.getByText(/No hay descripción disponible/i)).toBeInTheDocument();
+    expect(screen.getByText('No hay descripción disponible.')).toBeInTheDocument();
   });
 
   it('handles missing authors', () => {
-    const bookNoAuthors = { volumeInfo: { ...book.volumeInfo, authors: undefined } };
+    const bookNoAuthors = { ...book, volumeInfo: { ...book.volumeInfo, authors: undefined } };
     render(<BookDetails book={bookNoAuthors} />);
     expect(screen.getByText('Autor: Desconocido')).toBeInTheDocument();
   });
 
   it('handles missing image', () => {
-    const bookNoImage = { volumeInfo: { ...book.volumeInfo, imageLinks: undefined } };
+    const bookNoImage = { ...book, volumeInfo: { ...book.volumeInfo, imageLinks: undefined } };
     render(<BookDetails book={bookNoImage} />);
-    expect(screen.getByRole('img')).toHaveAttribute('src', '/placeholder.jpg');
+    // Verificar que la URL optimizada contiene el placeholder codificado
+    const img = screen.getByRole('img');
+    const src = img.getAttribute('src');
+    expect(src).toContain(encodeURIComponent('https://via.placeholder.com/150?text=No+Image'));
+    expect(screen.getByText('No se pudo cargar la imagen del libro.')).toBeInTheDocument();
   });
 });

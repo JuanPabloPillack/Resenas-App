@@ -11,7 +11,7 @@ export default function BookDetails({ book }: { book: Book }) {
     volumeInfo.imageLinks?.thumbnail?.replace('&edge=curl', '').replace('http://', 'https://') ||
     'https://via.placeholder.com/150?text=No+Image'
   );
-  const [imageError, setImageError] = useState(false);
+  const [imageError, setImageError] = useState(!volumeInfo.imageLinks);
 
   const createMarkup = (html: string) => {
     return { __html: html || '' };
@@ -23,22 +23,24 @@ export default function BookDetails({ book }: { book: Book }) {
   };
 
   return (
-    <div className="flex mb-4">
-      <div>
+    <div className="flex mb-4 flex-col md:flex-row">
+      <div className="flex-shrink-0 mb-4 md:mb-0">
         <Image
           data-testid="book-image"
           src={imageSrc}
           alt={volumeInfo.title || 'Imagen del libro'}
-          width={192} // w-48 = 192px
-          height={288} // h-72 = 288px
-          className="mr-4 object-cover"
+          width={384} // Aumentado de 192px a 384px (w-96)
+          height={576} // Aumentado de 288px a 576px (h-144)
+          className="mr-0 md:mr-6 object-cover rounded-lg"
           onError={handleImageError}
         />
         {imageError && (
-          <p className="text-red-500 text-sm">No se pudo cargar la imagen del libro.</p>
+          <p className="text-red-500 text-sm mt-2 text-center md:text-left">
+            No se pudo cargar la imagen del libro.
+          </p>
         )}
       </div>
-      <div>
+      <div className="flex-1">
         <h1 className="text-3xl font-bold">{volumeInfo.title || 'Sin título'}</h1>
         <p>Autor: {volumeInfo.authors?.join(', ') || 'Desconocido'}</p>
         <p>Publicado: {volumeInfo.publishedDate || 'Desconocido'}</p>
