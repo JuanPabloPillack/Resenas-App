@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import axios from 'axios';
+import { Book } from '../types';
 
-export default function SearchBar({ onSearch }: { onSearch: (books: any[]) => void }) {
+export default function SearchBar({ onSearch }: { onSearch: (books: Book[]) => void }) {
   const [query, setQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +21,7 @@ export default function SearchBar({ onSearch }: { onSearch: (books: any[]) => vo
 
     try {
       const response = await axios.get(url);
-      const books = response.data.items || [];
+      const books: Book[] = response.data.items || [];
       if (books.length === 0) {
         setError('No se encontraron resultados para esta búsqueda.');
       }
@@ -39,12 +40,12 @@ export default function SearchBar({ onSearch }: { onSearch: (books: any[]) => vo
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Busca por título, autor o ISBN (10 o 13 dígitos)"
         className="border p-2 w-full md:w-1/2"
-        data-testid="search-input" // Añadido para pruebas
+        data-testid="search-input"
       />
       <button
         type="submit"
         className="bg-blue-500 text-white p-2 ml-2"
-        data-testid="search-button" // Añadido para pruebas
+        data-testid="search-button"
       >
         Buscar
       </button>

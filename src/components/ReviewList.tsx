@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { getReviews, voteReview } from '../lib/localStorage';
 import { FaStar, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
+import { Review } from '../types';
 
 export default function ReviewList({ bookId }: { bookId: string }) {
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
     setReviews(getReviews(bookId).sort((a, b) => b.votes - a.votes));

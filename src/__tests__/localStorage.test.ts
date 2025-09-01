@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { getReviews, saveReview, voteReview } from '../lib/localStorage';
+import { Review } from '../types';
 
 // Mock de localStorage
 const localStorageMock = (() => {
@@ -9,9 +10,9 @@ const localStorageMock = (() => {
     setItem: vi.fn((key: string, value: string) => {
       store[key] = value.toString();
     }),
-    clear: () => {
+    clear: vi.fn(() => {
       store = {};
-    },
+    }),
   };
 })();
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
@@ -27,14 +28,14 @@ describe('localStorage utilities', () => {
     });
 
     it('returns reviews from localStorage', () => {
-      const reviews = [{ id: 1, name: 'Juan', rating: 5, text: 'Great book!', votes: 0 }];
+      const reviews: Review[] = [{ id: 1, bookId: 'book1', name: 'Juan', rating: 5, text: 'Great book!', votes: 0 }];
       localStorage.setItem('reviews_book1', JSON.stringify(reviews));
       expect(getReviews('book1')).toEqual(reviews);
     });
 
     it('returns empty array on server-side (no window)', () => {
       const originalWindow = window;
-      // @ts-ignore
+      // @ts-expect-error
       delete global.window;
       expect(getReviews('book1')).toEqual([]);
       global.window = originalWindow;
@@ -43,7 +44,7 @@ describe('localStorage utilities', () => {
 
   describe('saveReview', () => {
     it('saves a new review with id and votes', () => {
-      const review = { name: 'Ana', rating: 4, text: 'Good read' };
+      const review: Review = { id: 0, bookId: 'book1', name: 'Ana', rating: 4, text: 'Good read', votes: 0 };
       saveReview('book1', review);
       const savedReviews = getReviews('book1');
       expect(savedReviews).toHaveLength(1);
@@ -55,8 +56,8 @@ describe('localStorage utilities', () => {
     });
 
     it('appends to existing reviews', () => {
-      const review1 = { name: 'Juan', rating: 5, text: 'Great!' };
-      const review2 = { name: 'Ana', rating: 4, text: 'Good' };
+      const review1: Review = { id: 1, bookId: 'book1', name: 'Juan', rating: 5, text: 'Great!', votes: 0 };
+      const review2: Review = { id: 2, bookId: 'book1', name: 'Ana', rating: 4, text: 'Good', votes: 0 };
       saveReview('book1', review1);
       saveReview('book1', review2);
       expect(getReviews('book1')).toHaveLength(2);
@@ -65,23 +66,23 @@ describe('localStorage utilities', () => {
 
   describe('voteReview', () => {
     it('increments votes for a review', () => {
-      const review = { id: 1, name: 'Juan', rating: 5, text: 'Great!', votes: 0 };
+      const review: Review = { id: 1, bookId: 'book1', name: 'Juan', rating: 5, text: 'Great!', votes: 0 };
       localStorage.setItem('reviews_book1', JSON.stringify([review]));
       voteReview('book1', 1, 1);
       expect(getReviews('book1')[0].votes).toBe(1);
     });
 
     it('decrements votes for a review', () => {
-      const review = { id: 1, name: 'Juan', rating: 5, text: 'Great!', votes: 0 };
+      const review: Review = { id: 1, bookId: 'book1', name: 'Juan', rating: 5, text: 'Great!', votes: 0 };
       localStorage.setItem('reviews_book1', JSON.stringify([review]));
       voteReview('book1', 1, -1);
       expect(getReviews('book1')[0].votes).toBe(-1);
     });
 
     it('does not affect other reviews', () => {
-      const reviews = [
-        { id: 1, name: 'Juan', rating: 5, text: 'Great!', votes: 0 },
-        { id: 2, name: 'Ana', rating: 4, text: 'Good', votes: 0 },
+      const reviews: Review[] = [
+        { id: 1, bookId: 'book1', name: 'Juan', rating: 5, text: 'Great!', votes: 0 },
+        { id: 2, bookId: 'book1', name: 'Ana', rating: 4, text: 'Good', votes: 0 },
       ];
       localStorage.setItem('reviews_book1', JSON.stringify(reviews));
       voteReview('book1', 1, 1);
