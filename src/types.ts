@@ -25,3 +25,6 @@ export interface Review {
   rating: number;
   votes: number;
 }
+
+// Nuevo tipo: lo que viene del formulario
+export type ReviewInput = Pick<Review, "name" | "text" | "rating">;
