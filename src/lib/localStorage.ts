@@ -1,4 +1,4 @@
-import { Review } from '@/types';
+import { Review, ReviewInput } from '@/types';
 
 export function getReviews(bookId: string): Review[] {
   if (typeof window === 'undefined') return [];
@@ -6,9 +6,17 @@ export function getReviews(bookId: string): Review[] {
   return reviews ? JSON.parse(reviews) : [];
 }
 
-export function saveReview(bookId: string, review: Review) {
+export function saveReview(bookId: string, review: ReviewInput) {
   const reviews = getReviews(bookId);
-  reviews.push({ ...review, id: Date.now(), votes: 0 });
+
+  const newReview: Review = {
+    id: Date.now(),
+    bookId,
+    votes: 0,
+    ...review,
+  };
+
+  reviews.push(newReview);
   localStorage.setItem(`reviews_${bookId}`, JSON.stringify(reviews));
 }
 
