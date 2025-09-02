@@ -13,9 +13,9 @@ Docker: Soporte para despliegue en producción utilizando contenedores.
 
 # Enlaces
 
-Aplicación Deployada: resenas-app.vercel.app
+Aplicación Deployada: http://resenas-app.vercel.app
 
-Repositorio: github.com/JuanPabloPillack/Resenas-App
+Repositorio: http://github.com/JuanPabloPillack/Resenas-App
 
 # Requisitos Previos
 
@@ -35,19 +35,21 @@ cd Resenas-App
 
 # Instalar Dependencias si estas no están instaladas:
 npm install
-# o
+o
 yarn install
 
 
 # Ejecutar en Modo Desarrollo:
 npm run dev
-# o
+o
 yarn dev
 
 La aplicación estará disponible en http://localhost:3000.
 
 
 # Variables de Entorno
+Se necesita configurar el GITHUB_TOKEN para que el workflow de docker funcione correctamente
+
 No se requieren variables de entorno críticas para la ejecución local. Si necesitas configurar variables (por ejemplo, NEXT_PUBLIC_API_KEY), agrégalas en un archivo .env.local
 
 # CI/CD con GitHub Actions
@@ -134,4 +136,7 @@ Tests en Pull Requests: Garantiza la calidad del código mediante tests unitario
 
 Docker Build & Publish: Automatiza la creación y publicación de imágenes Docker.
 
-![Demostraciones](screenshots/success.png)
+![Demostracion](screenshots/success.png)
+
+
+
