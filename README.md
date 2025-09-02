@@ -1,49 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Plataforma de Descubrimiento y Reseñas de Libros
 
-## Getting Started
+Esta aplicación permite a los usuarios descubrir libros, explorar detalles, dejar reseñas y calificarlas. Está desarrollada con Next.js 15 y TypeScript, ofreciendo una experiencia moderna y eficiente para los amantes de la lectura.
 
-First, run the development server:
+# Características
 
-```bash
+Descubrimiento de Libros: Explora una lista de libros y accede a información detallada.
+
+Reseñas: Crea reseñas con calificaciones.
+
+CI/CD: Implementado con GitHub Actions para integración y despliegue continuo.
+Docker: Soporte para despliegue en producción utilizando contenedores.
+
+# Enlaces
+
+Aplicación Deployada: resenas-app.vercel.app
+
+Repositorio: github.com/JuanPabloPillack/Resenas-App
+
+# Requisitos Previos
+
+Node.js: Versión 18 o superior
+
+npm o yarn para la gestión de dependencias
+
+Docker (opcional, para ejecución en contenedores)
+
+# Instalación y Ejecución Local
+
+Clonar el Repositorio:
+git clone https://github.com/JuanPabloPillack/Resenas-App
+
+cd Resenas-App
+
+
+# Instalar Dependencias si estas no están instaladas:
+npm install
+# o
+yarn install
+
+
+# Ejecutar en Modo Desarrollo:
 npm run dev
-# or
+# o
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+La aplicación estará disponible en http://localhost:3000.
 
 
-## URL de Producción
-- https://resenas-app.vercel.app   
+# Variables de Entorno
+No se requieren variables de entorno críticas para la ejecución local. Si necesitas configurar variables (por ejemplo, NEXT_PUBLIC_API_KEY), agrégalas en un archivo .env.local
 
-## Repositorio
-- https://github.com/JuanPabloPillack/Resenas-App
+# CI/CD con GitHub Actions
 
-## Cómo ejecutar localmente
-```bash
-npm ci
-npm run dev
-# abrir http://localhost:3000
+1. Build en Pull Requests (build-pr.yml)
+
+Descripción: Se ejecuta automáticamente en cada pull request.
+
+Acciones:
+Instala dependencias.
+Realiza el build de la aplicación.
+Falla si el build no es exitoso.
+
+
+
+2. Tests en Pull Requests (test-pr.yml)
+
+Descripción: Se ejecuta automáticamente en cada pull request.
+
+Acciones:
+Instala dependencias.
+Ejecuta todos los tests unitarios con Vitest.
+Falla si algún test no pasa.
+
+
+
+3. Publicación de Imagen Docker (docker-publish.yml)
+
+Descripción: Se ejecuta al mergear código en la rama main.
+
+Acciones:
+Construye una imagen Docker de la aplicación.
+Publica la imagen en GitHub Container Registry (GHCR) con los tags latest y sha-<commit>.
+
+
+
+# Ejecución con Docker
+
+Descargar la Imagen:
+docker pull ghcr.io/juanpablopillack/resenas-app:latest
+
+
+Ejecutar la Aplicación:
+docker run -p 3000:3000 ghcr.io/juanpablopillack/resenas-app:latest
+
+Accede a la aplicación en http://localhost:3000.
+
+
+# Estructura del Proyecto
+plataforma-libros-despliegue/
+├── .dockerignore
+├── .gitignore
+├── Dockerfile
+├── eslint.config.mjs
+├── next-env.d.ts
+├── next.config.ts
+├── package.json
+├── postcss.config.mjs
+├── README.md
+├── tsconfig.json
+├── vitest.config.ts
+├── vitest.setup.ts
+├── .github/
+│   └── workflows/
+│       ├── build-pr.yml
+│       ├── docker-publish.yml
+│       └── test-pr.yml
+├── .next/
+├── public/
+├── screenshots/
+├── src/
+│   ├── __tests__/
+│   ├── app/
+│   ├── components/
+│   └── lib/
+
+# Demostraciones de Workflows
+
+Build en Pull Requests: Verifica la integridad del build en cada PR.
+
+
+Tests en Pull Requests: Garantiza la calidad del código mediante tests unitarios.
+
+
+Docker Build & Publish: Automatiza la creación y publicación de imágenes Docker.
+
+![Demostraciones](screenshots/success.png)
