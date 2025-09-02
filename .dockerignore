@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.next/cache
+.git
+.gitignore
+Dockerfile
+.dockerignore
+.vscode
+coverage
+dist
