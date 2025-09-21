@@ -1,4 +1,4 @@
-// src/types/types.ts
+// archivo: src/types/types.ts
 
 export interface Book {
   id: string;
