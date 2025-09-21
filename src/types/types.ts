@@ -1,3 +1,5 @@
+// archivo: src/types/types.ts
+
 export interface Book {
   id: string;
   volumeInfo: {

@@ -1,89 +1,95 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+// src/components/__tests__/ReviewForm.test.tsx
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ReviewForm from '../components/ReviewForm';
-import * as localStorage from '../lib/localStorage';
+import { useSession } from 'next-auth/react';
+import { http, HttpResponse } from 'msw';
+import { server } from '@/mocks/server';
+import ReviewForm from '@/components/ReviewForm';
+import { vi } from 'vitest';
 
-vi.mock('../lib/localStorage', () => ({
-  saveReview: vi.fn(),
+vi.mock('next-auth/react', () => ({
+  useSession: vi.fn(),
 }));
 
-const reloadMock = vi.fn();
-Object.defineProperty(window, 'location', {
-  value: { reload: reloadMock },
-  writable: true,
-});
-
 describe('ReviewForm', () => {
-  const bookId = 'book1';
+  const bookId = 'test-book-id';
+  const onReviewCreated = vi.fn();
 
   beforeEach(() => {
+    (useSession as any).mockReturnValue({
+      data: { user: { id: 'user-id', name: 'Test User' } },
+      status: 'authenticated',
+    });
+    server.use(
+      http.post('/api/reviews', async () => {
+        return HttpResponse.json({
+          _id: 'review-id',
+          userId: 'user-id',
+          userName: 'Test User',
+          bookId,
+          rating: 4,
+          content: 'Great book!',
+          createdAt: '2025-09-18',
+        });
+      })
+    );
+  });
+
+  afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders name, rating, and text inputs', () => {
-    render(<ReviewForm bookId={bookId} />);
-    expect(screen.getByLabelText(/Tu nombre/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Escribe tu reseña/i)).toBeInTheDocument();
-    expect(screen.getAllByTestId('star')).toHaveLength(5);
-    expect(screen.getByRole('button', { name: /Enviar Reseña/i })).toBeInTheDocument();
+  it('renders the review form correctly', () => {
+    render(<ReviewForm bookId={bookId} onReviewCreated={onReviewCreated} />);
+    expect(screen.getByText('Calificación')).toBeInTheDocument();
+    expect(screen.getByLabelText('Reseña')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Enviar reseña/i })).toBeInTheDocument();
+    expect(screen.getByTestId('star-1')).toBeInTheDocument();
   });
 
-  it('shows error when submitting empty form', async () => {
-    render(<ReviewForm bookId={bookId} />);
-    await userEvent.click(screen.getByRole('button', { name: /Enviar Reseña/i }));
-    expect(screen.getByTestId('error-message')).toHaveTextContent(
-      'Por favor, completa todos los campos: nombre, calificación y reseña.'
-    );
-    expect(localStorage.saveReview).not.toHaveBeenCalled();
-  });
-
-  it('submits valid form and clears inputs', async () => {
-    render(<ReviewForm bookId={bookId} />);
-    await userEvent.type(screen.getByLabelText(/Tu nombre/i), 'Juan');
-    await userEvent.click(screen.getAllByTestId('star')[3]);
-    await userEvent.type(screen.getByPlaceholderText(/Escribe tu reseña/i), 'Gran libro');
-    await userEvent.click(screen.getByRole('button', { name: /Enviar Reseña/i }));
-    expect(localStorage.saveReview).toHaveBeenCalledWith(bookId, {
-      name: 'Juan',
-      rating: 4,
-      text: 'Gran libro',
+  it('submits a review successfully', async () => {
+    render(<ReviewForm bookId={bookId} onReviewCreated={onReviewCreated} />);
+    await userEvent.click(screen.getByTestId('star-4'));
+    await userEvent.type(screen.getByLabelText('Reseña'), 'Great book!');
+    await userEvent.click(screen.getByRole('button', { name: /Enviar reseña/i }));
+    await waitFor(() => {
+      expect(screen.getByText('Reseña creada con éxito')).toBeInTheDocument();
+      expect(onReviewCreated).toHaveBeenCalledWith({
+        _id: 'review-id',
+        userId: 'user-id',
+        userName: 'Test User',
+        bookId,
+        rating: 4,
+        content: 'Great book!',
+        createdAt: '2025-09-18',
+      });
     });
-    expect(screen.getByLabelText(/Tu nombre/i)).toHaveValue('');
-    expect(screen.getByPlaceholderText(/Escribe tu reseña/i)).toHaveValue('');
-    expect(reloadMock).toHaveBeenCalled();
   });
 
-  it('does not submit if name is missing', async () => {
-    render(<ReviewForm bookId={bookId} />);
-    await userEvent.click(screen.getAllByTestId('star')[3]);
-    await userEvent.type(screen.getByPlaceholderText(/Escribe tu reseña/i), 'Gran libro');
-    await userEvent.click(screen.getByRole('button', { name: /Enviar Reseña/i }));
-    expect(screen.getByTestId('error-message')).toHaveTextContent(
-      'Por favor, completa todos los campos: nombre, calificación y reseña.'
-    );
-    expect(localStorage.saveReview).not.toHaveBeenCalled();
+  it('displays error when not authenticated', async () => {
+    (useSession as any).mockReturnValue({ data: null, status: 'unauthenticated' });
+    render(<ReviewForm bookId={bookId} onReviewCreated={onReviewCreated} />);
+    await userEvent.click(screen.getByRole('button', { name: /Enviar reseña/i }));
+    await waitFor(() => {
+      expect(screen.getByText('Por favor, inicia sesión para escribir una reseña')).toBeInTheDocument();
+    });
   });
 
-  it('does not submit if rating is missing', async () => {
-    render(<ReviewForm bookId={bookId} />);
-    await userEvent.type(screen.getByLabelText(/Tu nombre/i), 'Juan');
-    await userEvent.type(screen.getByPlaceholderText(/Escribe tu reseña/i), 'Gran libro');
-    await userEvent.click(screen.getByRole('button', { name: /Enviar Reseña/i }));
-    expect(screen.getByTestId('error-message')).toHaveTextContent(
-      'Por favor, completa todos los campos: nombre, calificación y reseña.'
-    );
-    expect(localStorage.saveReview).not.toHaveBeenCalled();
+  it('displays error when rating is missing', async () => {
+    render(<ReviewForm bookId={bookId} onReviewCreated={onReviewCreated} />);
+    await userEvent.type(screen.getByLabelText('Reseña'), 'Great book!');
+    await userEvent.click(screen.getByRole('button', { name: /Enviar reseña/i }));
+    await waitFor(() => {
+      expect(screen.getByText('Por favor, selecciona una calificación entre 1 y 5')).toBeInTheDocument();
+    });
   });
 
-  it('does not submit if text is missing', async () => {
-    render(<ReviewForm bookId={bookId} />);
-    await userEvent.type(screen.getByLabelText(/Tu nombre/i), 'Juan');
-    await userEvent.click(screen.getAllByTestId('star')[3]);
-    await userEvent.click(screen.getByRole('button', { name: /Enviar Reseña/i }));
-    expect(screen.getByTestId('error-message')).toHaveTextContent(
-      'Por favor, completa todos los campos: nombre, calificación y reseña.'
-    );
-    expect(localStorage.saveReview).not.toHaveBeenCalled();
+  it('displays error when content is empty', async () => {
+    render(<ReviewForm bookId={bookId} onReviewCreated={onReviewCreated} />);
+    await userEvent.click(screen.getByTestId('star-4'));
+    await userEvent.click(screen.getByRole('button', { name: /Enviar reseña/i }));
+    await waitFor(() => {
+      expect(screen.getByText('La reseña no puede estar vacía')).toBeInTheDocument();
+    });
   });
 });

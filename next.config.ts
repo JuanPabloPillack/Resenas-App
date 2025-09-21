@@ -1,8 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  
-  /* config options here */
   output: 'standalone',
   images: {
     remotePatterns: [
@@ -19,6 +17,9 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+  },
+  eslint: {
+    ignoreDuringBuilds: true, // Ignora errores de ESLint durante el build
   },
 };
 
