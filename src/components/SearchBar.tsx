@@ -1,8 +1,10 @@
+// src/components/SearchBar.tsx
+
 'use client';
 
 import { useState } from 'react';
 import axios from 'axios';
-import { Book } from '../types';
+import { Book } from '../types/types';
 
 export default function SearchBar({ onSearch }: { onSearch: (books: Book[]) => void }) {
   const [query, setQuery] = useState('');
